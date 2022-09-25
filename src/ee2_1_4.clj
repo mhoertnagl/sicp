@@ -9,6 +9,13 @@
   (make-interval (+ (lower-bound x) (lower-bound y))
                  (+ (upper-bound x) (upper-bound y))))
 
+;; Exercise 2.10
+;; Throwing exceptions at users is not nice ;)
+(defn make-interval [a b]
+  (if (= a b)
+    (throw (IllegalArgumentException. "Interval spans zero"))
+    [a b]))
+
 ;; Exercise 2.8
 ;; Suppose x = [1.1 1.7] and y = [0.3 0.5].
 ;; The lowest value of x - y = [1.1 1.7] - [0.3 0.5] would then be
@@ -36,4 +43,13 @@
 (defn interval-str [x] (str "[" (lower-bound x) ", " (upper-bound x) "]"))
 (defn print-interval [x] (println (interval-str x)))
 
-
+;; Exercise 2.9
+;; Define the width of an interval x = [x1, x2] to w(x) = (x2 - x1)/2
+;; We will prove that w(x + y) = w(x) + w(y).
+;;
+;; Proof. Let x = [x1, x2] and y = [y1, y2] be two intervals. Then
+;;
+;;   w(x + y) = ((x2 + y2) - (x1 + y1))/2
+;;            = ((x2 - x1) + (y2 - y1))/2
+;;            = (x2 - x1)/2 + (y2 - y1)/2
+;;            = w(x) + w(y)                                         □

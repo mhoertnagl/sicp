@@ -24,3 +24,8 @@
     (def z (make-interval 0.7 1.6))
     (is (interval-close-to (sub-interval x y) z 1e-7)))
 )
+
+(deftest exercise-2-10
+  (testing "disallow intervals that span zero"
+    (is (thrown? IllegalArgumentException (make-interval 1 1))))
+  )
