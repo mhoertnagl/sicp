@@ -8,4 +8,5 @@
    (def q (make-point 4 9))
    (def m (make-point 5/2 11/2))
    (def s (make-segment p q))
-   (is (= m (midpoint-segment s)))) )
+   (is (= m (midpoint-segment s))))
+ )

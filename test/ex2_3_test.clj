@@ -21,4 +21,4 @@
    (def r2 (make-rectangle-2 s))
    (is (= 20 (rectangle-perimeter r1)))
    (is (= 20 (rectangle-perimeter r2))))
- )
+)

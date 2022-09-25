@@ -25,4 +25,5 @@
     (def act (make-rat -1 -2))
     (def exp (make-rat 1 2))
     (is (= (numer exp) (numer act)))
-    (is (= (denom exp) (denom act)))))
+    (is (= (denom exp) (denom act))))
+)
