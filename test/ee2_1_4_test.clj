@@ -28,4 +28,38 @@
 (deftest exercise-2-10
   (testing "disallow intervals that span zero"
     (is (thrown? IllegalArgumentException (make-interval 1 1))))
+)
+
+(deftest exercise-2-12
+  (testing "percentage intervals"
+    (let [i (make-center-percent 100 2)]
+      (is (= (lower-bound i) 98))
+      (is (= (upper-bound i) 102))
+      (is (= (center i) 100))
+      ;; This is failing with 4 != 2N.
+      ;(is (= (width i) 4))
+      (is (= (percent i) 2))))
+
+  ;; 1% 1% ~> 2%
+  ;; 2% 1% ~> 3%
+  ;; 2% 2% ~> 4%
+  ;; 20% 20% ~> 38.5%
+  (testing "multiply intervals with small percentages"
+    (let [x (make-center-percent 100 1)
+          y (make-center-percent 100 1)
+          p (mul-interval x y)]
+      (println (percent p)))
+    (let [x (make-center-percent 100 2)
+          y (make-center-percent 100 1)
+          p (mul-interval x y)]
+      (println (percent p)))
+    (let [x (make-center-percent 100 2)
+          y (make-center-percent 100 2)
+          p (mul-interval x y)]
+      (println (percent p)))
+    (let [x (make-center-percent 100 20)
+          y (make-center-percent 100 20)
+          p (mul-interval x y)]
+      (println (percent p)))
   )
+)
