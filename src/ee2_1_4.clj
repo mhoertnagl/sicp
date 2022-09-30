@@ -37,6 +37,7 @@
 ;; Exercise 2.11
 ;; Sorry, this exercise sucks.
 
+;; Note that lower and upper bounds swap places.
 (defn inv-interval [x]
   (make-interval (/ 1.0 (upper-bound x))
                  (/ 1.0 (lower-bound x))))
@@ -118,3 +119,15 @@
 
 (defn print-interval-percent [x]
   (println (interval-percent-str x)))
+
+(defn par1 [r1 r2]
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+
+(defn par2 [r1 r2]
+  (inv-interval (add-interval (inv-interval r1)
+                              (inv-interval r2))))
+
+;; Exercise 2.14
+;; unit test "parallel resistances results differ"
+;; documents the different results for par1 and par2.

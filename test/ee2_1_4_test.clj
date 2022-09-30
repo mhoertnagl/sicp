@@ -60,6 +60,20 @@
     (let [x (make-center-percent 100 20)
           y (make-center-percent 100 20)
           p (mul-interval x y)]
-      (println (percent p)))
-  )
+      (println (percent p))))
+)
+
+(deftest exercise-2-14
+  (testing "parallel resistances results differ"
+    (let [r1 (make-center-percent 1000 5)
+          r2 (make-center-percent 2000 7)]
+      (print-interval-percent (par1 r1 r2))
+      (print-interval-percent (par2 r1 r2))))
+
+  (testing "quotients of two intervals"
+    (let [r1 (make-center-percent 1000 5)
+          r2 (make-center-percent 2000 7)]
+      (print-interval-percent (div-interval r1 r1))
+      (print-interval-percent (mul-interval r1 (div-interval r1 r1)))
+      (print-interval-percent (div-interval r1 r2))))
 )
