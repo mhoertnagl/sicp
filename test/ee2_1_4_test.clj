@@ -63,17 +63,25 @@
       (println (percent p))))
 )
 
+(defn par1 [r1 r2]
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+
+(defn par2 [r1 r2]
+  (inv-interval (add-interval (inv-interval r1)
+                              (inv-interval r2))))
 (deftest exercise-2-14
   (testing "parallel resistances results differ"
     (let [r1 (make-center-percent 1000 5)
           r2 (make-center-percent 2000 7)]
       (print-interval-percent (par1 r1 r2))
       (print-interval-percent (par2 r1 r2))))
+)
 
+(deftest exercise-2-15
   (testing "quotients of two intervals"
-    (let [r1 (make-center-percent 1000 5)
-          r2 (make-center-percent 2000 7)]
+    (let [r1 (make-center-percent 1000 5)]
       (print-interval-percent (div-interval r1 r1))
       (print-interval-percent (mul-interval r1 (div-interval r1 r1)))
-      (print-interval-percent (div-interval r1 r2))))
+      (print-interval-percent (div-interval (mul-interval r1 r1) r1))))
 )

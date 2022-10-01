@@ -38,9 +38,12 @@
 ;; Sorry, this exercise sucks.
 
 ;; Note that lower and upper bounds swap places.
+;(defn inv-interval [x]
+;  (make-interval (/ 1.0 (upper-bound x))
+;                 (/ 1.0 (lower-bound x))))
 (defn inv-interval [x]
-  (make-interval (/ 1.0 (upper-bound x))
-                 (/ 1.0 (lower-bound x))))
+  (make-interval (/ (upper-bound x))
+                 (/ (lower-bound x))))
 
 (defn div-interval [x y]
   (mul-interval x (inv-interval y)))
@@ -120,14 +123,24 @@
 (defn print-interval-percent [x]
   (println (interval-percent-str x)))
 
-(defn par1 [r1 r2]
-  (div-interval (mul-interval r1 r2)
-                (add-interval r1 r2)))
-
-(defn par2 [r1 r2]
-  (inv-interval (add-interval (inv-interval r1)
-                              (inv-interval r2))))
-
 ;; Exercise 2.14
 ;; unit test "parallel resistances results differ"
 ;; documents the different results for par1 and par2.
+
+;; Exercise 2.15
+;; As proved in E2.13, the percentage of the product of two
+;; intervals equals approximately the sum of the two
+;; percentages of the factors. The same is true for the
+;; quotient.
+;; In the case of resistors, a resistors' tolerance should
+;; be accounted for only once, even if the algebraic
+;; expression does not allow it to be reduced to a single
+;; occurrence.
+
+;; Exercise 2.15
+;; In order to avoid repeated application of an interval's
+;; bounds, every interval is assigned a unique identifier.
+;; While evaluating an expression, record the first
+;; application of an interval's bounds. If an interval has
+;; been encountered already continue computation with the
+;; center value and a bound width of 0.
