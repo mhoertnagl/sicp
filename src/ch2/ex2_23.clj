@@ -1,4 +1,4 @@
-(ns ex2-23 (:require [clojure.test :refer :all]))
+(ns ch2.ex2-23 (:require [clojure.test :refer :all]))
 
 (defn for-each [f xs]
   (if (empty? xs)

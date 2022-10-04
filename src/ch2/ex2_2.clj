@@ -1,4 +1,4 @@
-(ns ex2-2)
+(ns ch2.ex2-2)
 
 (defn avg [a b] (/ (+ a b) 2))
 

@@ -1,4 +1,4 @@
-(ns ex2-20 (:require [clojure.test :refer :all]))
+(ns ch2.ex2-20 (:require [clojure.test :refer :all]))
 
 (defn same-parity [x & xs]
   (filter (if (even? x) even? odd?) (conj xs x)))

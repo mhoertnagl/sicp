@@ -1,7 +1,7 @@
 (ns ex2-3-test
   (:require [clojure.test :refer :all])
-  (:require [ex2-2 :refer :all])
-  (:require [ex2-3 :refer :all]))
+  (:require [ch2.ex2-2 :refer :all])
+  (:require [ch2.ex2-3 :refer :all]))
 
 (deftest exercise-2-3
  (testing "compute the area of a rectangle"

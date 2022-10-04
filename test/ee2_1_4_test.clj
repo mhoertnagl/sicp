@@ -1,6 +1,6 @@
 (ns ee2-1-4-test
   (:require [clojure.test :refer :all])
-  (:require [ee2-1-4 :refer :all]))
+  (:require [ch2.ee2-1-4 :refer :all]))
 
 ; (defn abs [x] (max x (- x)))
 (defn close-to [a b epsilon] (<= (abs (- a b)) epsilon))

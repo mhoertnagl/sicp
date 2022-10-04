@@ -1,4 +1,4 @@
-(ns ee2-1-4)
+(ns ch2.ee2-1-4)
 
 ;; Exercise 2.7
 (defn make-interval [a b] [a b])

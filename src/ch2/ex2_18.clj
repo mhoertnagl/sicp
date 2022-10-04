@@ -1,4 +1,4 @@
-(ns ex2-18 (:require [clojure.test :refer :all]))
+(ns ch2.ex2-18 (:require [clojure.test :refer :all]))
 
 (defn my-reverse [xs]
   (case (count xs)

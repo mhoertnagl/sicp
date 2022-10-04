@@ -1,6 +1,6 @@
 (ns ex2-5-test
   (:require [clojure.test :refer :all])
-  (:require [ex2-5 :refer :all]))
+  (:require [ch2.ex2-5 :refer :all]))
 
 (deftest exercise-2-5
   (testing "count prime factor"

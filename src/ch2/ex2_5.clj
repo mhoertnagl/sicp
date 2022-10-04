@@ -1,4 +1,4 @@
-(ns ex2-5)
+(ns ch2.ex2-5)
 
 (def bigint-0 (biginteger 0))
 (def bigint-2 (biginteger 2))

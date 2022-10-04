@@ -1,6 +1,6 @@
 (ns ex2-1-test
   (:require [clojure.test :refer :all])
-  (:require [ex2-1 :refer :all]))
+  (:require [ch2.ex2-1 :refer :all]))
 
 (deftest exercise-2-1
   (testing "make-rat should handle positive arguments"

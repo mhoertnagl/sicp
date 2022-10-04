@@ -1,6 +1,6 @@
 (ns ex2-2-test
   (:require [clojure.test :refer :all])
-  (:require [ex2-2 :refer :all]))
+  (:require [ch2.ex2-2 :refer :all]))
 
 (deftest exercise-2-2
  (testing "compute the midpoint of a segment"

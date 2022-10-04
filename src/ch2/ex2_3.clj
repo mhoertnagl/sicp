@@ -1,4 +1,4 @@
-(ns ex2-3
+(ns ch2.ex2-3
   (:require [ex2-2 :refer :all]))
 
 ; Rectangle specified by its diagonal segment.

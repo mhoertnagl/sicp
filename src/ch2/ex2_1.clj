@@ -1,4 +1,4 @@
-(ns ex2-1)
+(ns ch2.ex2-1)
 
 (defn gcd [a b] (.gcd (biginteger a) (biginteger b)))
 (defn sign [a] (.signum (biginteger a)))
