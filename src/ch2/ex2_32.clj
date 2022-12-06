@@ -1,6 +1,10 @@
 (ns ch2.ex2-32
   (:require [clojure.test :refer :all]))
 
+;; We concatenate recursively two subsets. On the one hand
+;; the subsets of the set without the first element and on
+;; the other hand this subset concatenated with the first
+;; element.
 (defn subsets [s]
   (if (empty? s)
     (list nil)
