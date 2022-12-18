@@ -1,4 +1,4 @@
-(ns ch2.ex2-31
+(ns ch2_2.ex2-31
   (:require [clojure.test :refer :all]))
 
 (defn tree-map [f tree]

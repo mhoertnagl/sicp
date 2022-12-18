@@ -1,5 +1,6 @@
-(ns ch2.ex2-3
-  (:require [ex2-2 :refer :all]))
+(ns ch2_2.ex2-3
+  (:require [clojure.test :refer :all])
+  (:require [ch2_2.ex2-2 :refer :all]))
 
 ; Rectangle specified by its diagonal segment.
 (defn make-rectangle-2
@@ -32,3 +33,23 @@
 
 (defn rectangle-perimeter [r]
   (* 2 (+ (rectangle-width r) (rectangle-height r))))
+
+(deftest tests
+  (testing "compute the area of a rectangle"
+    (def p (make-point 1 2))
+    (def q (make-point 4 9))
+    (def s (make-segment p q))
+    (def r1 (make-rectangle-1 p q))
+    (def r2 (make-rectangle-2 s))
+    (is (= 21 (rectangle-area r1)))
+    (is (= 21 (rectangle-area r2))))
+
+  (testing "compute the perimeter of a rectangle"
+    (def p (make-point 1 2))
+    (def q (make-point 4 9))
+    (def s (make-segment p q))
+    (def r1 (make-rectangle-1 p q))
+    (def r2 (make-rectangle-2 s))
+    (is (= 20 (rectangle-perimeter r1)))
+    (is (= 20 (rectangle-perimeter r2))))
+  )

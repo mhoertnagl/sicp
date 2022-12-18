@@ -1,4 +1,4 @@
-(ns ch2.ex2-17 (:require [clojure.test :refer :all]))
+(ns ch2_2.ex2-17 (:require [clojure.test :refer :all]))
 
 (defn last-pair [xs]
   (case (count xs)

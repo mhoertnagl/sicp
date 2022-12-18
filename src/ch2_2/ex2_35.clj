@@ -1,4 +1,4 @@
-(ns ch2.ex2-35
+(ns ch2_2.ex2-35
   (:require [clojure.test :refer :all]))
 
 (defn count-leaves [xs]

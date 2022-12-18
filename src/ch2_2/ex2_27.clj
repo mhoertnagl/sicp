@@ -1,4 +1,4 @@
-(ns ch2.ex2-27 (:require [clojure.test :refer :all]))
+(ns ch2_2.ex2-27 (:require [clojure.test :refer :all]))
 
 (defn deep-reverse [x]
   (cond (nil? x) nil

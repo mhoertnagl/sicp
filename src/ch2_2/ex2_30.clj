@@ -1,4 +1,4 @@
-(ns ch2.ex2-30
+(ns ch2_2.ex2-30
   (:require [clojure.test :refer :all]))
 
 (defn square-tree [tree]

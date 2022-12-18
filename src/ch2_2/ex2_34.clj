@@ -1,4 +1,4 @@
-(ns ch2.ex2-34
+(ns ch2_2.ex2-34
   (:require [clojure.test :refer :all]))
 
 (defn horner-eval [x as]

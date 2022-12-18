@@ -1,4 +1,4 @@
-(ns ch2.ex2-33
+(ns ch2_2.ex2-33
   (:require [clojure.test :refer :all]))
 
 (defn my-map [f xs]

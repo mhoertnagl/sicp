@@ -1,4 +1,4 @@
-(ns ch2.ex2-28 (:require [clojure.test :refer :all]))
+(ns ch2_2.ex2-28 (:require [clojure.test :refer :all]))
 
 (defn fringe [x]
   (cond (nil? x) nil

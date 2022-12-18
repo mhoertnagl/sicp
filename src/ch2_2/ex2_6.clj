@@ -1,4 +1,4 @@
-(ns ch2.ex2-6)
+(ns ch2_2.ex2-6)
 
 ; (define zero (lambda (f) (lambda (x) x)))
 ; (define (add-1 n) (lambda (f) (lambda (x) (f (n f) x))))

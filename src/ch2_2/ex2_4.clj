@@ -1,4 +1,4 @@
-(ns ch2.ex2-4)
+(ns ch2_2.ex2-4)
 
 ; (car (cons x y))
 ; (car (lambda (m) (m x y)))

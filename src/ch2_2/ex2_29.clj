@@ -1,4 +1,4 @@
-(ns ch2.ex2-29
+(ns ch2_2.ex2-29
   (:require [clojure.test :refer :all]))
 
 (defn make-mobile [left right] (list left right))

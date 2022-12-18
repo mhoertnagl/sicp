@@ -1,4 +1,5 @@
-(ns ch2.ex2-1)
+(ns ch2_2.ex2-1
+  (:require [clojure.test :refer :all]))
 
 (defn gcd [a b] (.gcd (biginteger a) (biginteger b)))
 (defn sign [a] (.signum (biginteger a)))
@@ -39,4 +40,30 @@
 
 (defn print-rat [x]
   (println (str (numer x) "/" (denom x))))
+
+(deftest tests
+  (testing "make-rat should handle positive arguments"
+    (def act (make-rat 1 2))
+    (def exp (make-rat 1 2))
+    (is (= (numer exp) (numer act)))
+    (is (= (denom exp) (denom act))))
+
+  (testing "make-rat should handle negative numerator"
+    (def act (make-rat -1 2))
+    (def exp (make-rat -1 2))
+    (is (= (numer exp) (numer act)))
+    (is (= (denom exp) (denom act))))
+
+  (testing "make-rat should handle negative denominator"
+    (def act (make-rat 1 -2))
+    (def exp (make-rat -1 2))
+    (is (= (numer exp) (numer act)))
+    (is (= (denom exp) (denom act))))
+
+  (testing "make-rat should handle negative numerator and denominator"
+    (def act (make-rat -1 -2))
+    (def exp (make-rat 1 2))
+    (is (= (numer exp) (numer act)))
+    (is (= (denom exp) (denom act))))
+  )
 
