@@ -24,14 +24,14 @@
 ; Ex 2.61
 ; This is the same implementation as in the unordered set but
 ; element-of-set? takes advantage of the speedup by a factor of 2.
-(defn union-set [set1 set2]
-  (cond (and (empty? set1) (empty? set2)) '()
-        (empty? set1) set2
-        (empty? set2) set1
-        (element-of-set? (first set1) set2)
-          (union-set (rest set1) set2)
-        :else (cons (first set1)
-                    (union-set (rest set1) set2))))
+;(defn union-set [set1 set2]
+;  (cond (and (empty? set1) (empty? set2)) '()
+;        (empty? set1) set2
+;        (empty? set2) set1
+;        (element-of-set? (first set1) set2)
+;          (union-set (rest set1) set2)
+;        :else (cons (first set1)
+;                    (union-set (rest set1) set2))))
 
 ; Ex 2.62
 (defn union-set [set1 set2]
