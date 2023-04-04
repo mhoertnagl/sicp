@@ -1,10 +1,40 @@
 (ns ch3_3.circuit
-  (:require [clojure.test :refer :all])
-  (:require [utils.lists :refer :all]))
+  (:require [clojure.test :refer :all]))
 
-(def NOT-GATE-DELAY 3)
-(def AND-GATE-DELAY 5)
+(def NOT-GATE-DELAY 2)
+(def AND-GATE-DELAY 3)
 (def OR-GATE-DELAY 5)
+
+(defprotocol IAgenda
+  (agenda-empty? [agenda])
+  (first-agenda-item [agenda])
+  (remove-first-agenda-item! [agenda])
+  (add-to-agenda! [agenda delay action])
+  (current-time [agenda]))
+
+(defrecord Agenda [time queue]
+  IAgenda
+  (agenda-empty? [_] (empty? @queue))
+  (first-agenda-item [_] (second (first @queue)))
+  (remove-first-agenda-item! [_]
+    (swap! queue rest))
+  (add-to-agenda! [_ delay action]
+    (swap! queue assoc (+ @time delay) action))
+  (current-time [_] @time))
+
+(defn make-agenda [] (->Agenda (atom 0) (atom (sorted-map))))
+
+(defn propagate [agenda]
+  (while (not (agenda-empty? agenda))
+    (let [first-item (first-agenda-item agenda)]
+      (first-item)
+      (remove-first-agenda-item! agenda))))
+
+(def the-agenda (make-agenda))
+
+; TODO: Unsatisfactory. Couples the circuit to a global agenda instance.
+(defn after-delay [delay action]
+  (add-to-agenda! the-agenda delay action))
 
 (defprotocol IWire
   (get-signal [wire])
@@ -13,11 +43,15 @@
 
 (defrecord Wire [value actions]
   IWire
-  (get-signal [this] (:value @this))
-  (set-signal! [this new-value] (swap! this assoc :value new-value)))
+  (get-signal [_] @value)
+  (set-signal! [_ new-value]
+    (reset! value new-value)
+    (doseq [action @actions] (action)))
+  (add-action! [_ action]
+    (swap! actions conj action)
+    (action)))
 
-(defn make-wire []
-  (atom (map->Wire { :value 0 :actions [] })))
+(defn make-wire [] (->Wire (atom 0) (atom [])))
 
 (defn not-gate [input output]
   (letfn [(logical-not [s] (if (= s 0) 1 0))
@@ -58,17 +92,33 @@
 
 
 (defn half-adder [a b s c]
-  (let [(d (make-wire))
-        (e (make-wire))]
+  (let [d (make-wire)
+        e (make-wire)]
     (or-gate a b d)
     (and-gate a b c)
     (not-gate c e)
     (and-gate d e s)))
 
 (defn full-adder [a b c-in sum c-out]
-  (let [(s (make-wire))
-        (c1 (make-wire))
-        (c2 (make-wire))]
+  (let [s (make-wire)
+        c1 (make-wire)
+        c2 (make-wire)]
     (half-adder b c-in s c1)
     (half-adder a s sum c2)
     (or-gate c1 c2 c-out)))
+
+(deftest tests
+  (testing "set signal"
+    (let [wire (make-wire)]
+      (is (= (get-signal wire) 0))
+      (set-signal! wire 1)
+      (is (= (get-signal wire) 1)))
+    )
+
+  (testing "test not-gate"
+    (let [input (make-wire)
+          output (make-wire)]
+      (not-gate input output)
+      (is (= (first @my-map) [2 3])))
+    )
+  )
