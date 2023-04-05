@@ -87,16 +87,6 @@
 ; Ex 3.29
 ; Use the identity: A ∨ B ≡ ¬(¬A ∧ ¬B)
 
-; Ex 3.30
-(defn make-wires [agenda n]
-  (for [_ (range n)] (make-wire agenda)))
-
-(defn get-signals [wires]
-  (map get-signal wires))
-
-(defn set-signals! [wires new-values]
-  (map set-signal! wires new-values))
-
 (defn half-adder [agenda a b s c]
   (let [d (make-wire agenda)
         e (make-wire agenda)]
@@ -112,6 +102,19 @@
     (half-adder agenda b c-in s c1)
     (half-adder agenda a s sum c2)
     (or-gate c1 c2 c-out)))
+
+; Ex 3.30
+(defn make-wires [agenda n]
+  (for [_ (range n)] (make-wire agenda)))
+
+(defn get-signals [wires]
+  (map get-signal wires))
+
+(defn set-signals! [wires new-values]
+  (map set-signal! wires new-values))
+
+; TODO: Implement this.
+; (defn ripple-carry-adder [agenda as bs c-in sum c-out])
 
 (deftest tests
   (testing "set signal without actions"
