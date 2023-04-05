@@ -116,6 +116,17 @@
 ; TODO: Implement this.
 ; (defn ripple-carry-adder [agenda as bs c-in sum c-out])
 
+; Ex 3.31
+; We need to propagate the initial state to the output wires.
+; If we skip this initial call of the action, the circuit is
+; in an inconsistent state.
+
+; Ex 3.32
+; The correct way is to use a priority queue to account for
+; the fact that the gates have differing delays.
+; Without this ordering the simulation would not be accurate
+; in its time evolution.
+
 (deftest tests
   (testing "set signal without actions"
     (let [agenda (make-agenda)
