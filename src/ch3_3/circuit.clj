@@ -135,8 +135,8 @@
 (defn ripple-carry-adder [agenda as bs c-in sum c-out]
   (let [n (dec (count as))
         cs (make-wires agenda n)
-        cs-in (cons c-in cs)
-        cs-out (conj cs c-out)
+        cs-in (conj cs c-in)
+        cs-out (cons c-out cs)
         units (map vector as bs cs-in sum cs-out)]
     (println "as" (count as))
     (println "bs" (count bs))
@@ -145,6 +145,8 @@
     (println "cs-out" (count cs-out))
     (doseq [unit units]
       ;(println "len unit" (count unit))
+      ; a1 b1 c1   s1 c-out
+      ; a2 b2 c-in s2 c1
       (println (get-signals unit))
       ;(println "a" (get-signal (first unit))  "|"
       ;         "b" (get-signal (second unit)) "|"
@@ -580,6 +582,16 @@
       (is (= (get-signals as) [true true true true]))
       ))
 
+  (testing "vector operations 2"
+    (let [agenda (make-agenda)
+          a1 (make-wire agenda)
+          a2 (make-wire agenda)
+          a3 (make-wire agenda)]
+
+      (set-signal! a1 true)
+      (set-signal! a3 true)
+      (is (= (get-signals [a1 a2 a3]) [true false true]))
+      ))
   ;(testing "ripple carry adder 1"
   ;  (let [agenda (make-agenda)
   ;        as (make-wires agenda 1)
@@ -618,6 +630,7 @@
   ;    (is (= (get-signal c-out) true))
   ;    ))
 
+  ; TODO: What is wron with the ripple carry adder?
   (testing "ripple carry adder 2"
     (let [agenda (make-agenda)
           as (make-wires agenda 2)
@@ -627,11 +640,11 @@
           c-out (make-wire agenda)]
       (ripple-carry-adder agenda as bs c-in sum c-out)
 
-      (set-signal! c-in false)
-      (set-signals! as [false false])
-      (set-signals! bs [false false])
+      ;(set-signal! c-in false)
+      (set-signals! as [false true])
+      (set-signals! bs [false true])
       (propagate agenda)
-      (is (= (get-signals sum) [false false]))
+      (is (= (get-signals sum) [true false]))
       (is (= (get-signal c-out) false))
 
       ;(set-signal! c-in false)
