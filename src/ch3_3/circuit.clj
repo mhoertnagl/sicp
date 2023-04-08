@@ -132,6 +132,7 @@
   (doseq [pair (map vector wires new-values)]
     (apply set-signal! pair)))
 
+; TODO: What is wrong with the ripple carry adder?
 (defn ripple-carry-adder [agenda as bs c-in sum c-out]
   (let [n (dec (count as))
         cs (make-wires agenda n)
@@ -630,7 +631,7 @@
   ;    (is (= (get-signal c-out) true))
   ;    ))
 
-  ; TODO: What is wron with the ripple carry adder?
+  ; TODO: What is wrong with the ripple carry adder?
   (testing "ripple carry adder 2"
     (let [agenda (make-agenda)
           as (make-wires agenda 2)
