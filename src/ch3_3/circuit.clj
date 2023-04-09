@@ -23,8 +23,13 @@
   (agenda-size [_] (count @queue))
   (first-agenda-item [_] (first @queue))
   (remove-first-agenda-item! [_]
+    ; Rest operation returns a list we need to re-insert them
+    ; into a sorted-map :(
     (swap! queue (fn [xs] (into (sorted-map) (rest xs)))))
   (add-to-agenda! [_ delay action]
+    ; Map key is the tuple [time counter]. Then actions that
+    ; happen at the same time are still unique and will not
+    ; replace preexisting actions.
     (swap! queue assoc [(+ @time delay) @counter] action)
     (swap! counter inc))
   (set-time! [_ new-time] (reset! time new-time))
@@ -46,9 +51,10 @@
   (get-signal [wire])
   (set-signal! [wire new-value])
   (num-of-actions [wire])
-  (add-action! [wire action]))
+  (add-action! [wire action])
+  (wire-name [wire]))
 
-(defrecord Wire [agenda value actions]
+(defrecord Wire [agenda value actions name]
   IWire
   (get-signal [_] @value)
   (set-signal! [_ new-value]
@@ -57,10 +63,12 @@
   (num-of-actions [_] (count @actions))
   (add-action! [_ action]
     (swap! actions conj action)
-    (action agenda)))
+    (action agenda))
+  (wire-name [_] name))
 
-(defn make-wire [agenda]
-  (->Wire agenda (atom false) (atom ())))
+(defn make-wire
+  ([agenda] (make-wire agenda ""))
+  ([agenda name] (->Wire agenda (atom false) (atom ()) name)))
 
 (defn probe [name wire]
   (add-action! wire (fn [agenda]
@@ -69,6 +77,10 @@
                                name
                                ":"
                                (get-signal wire)))))
+
+(defn probes [name wires]
+  (doseq [[wire n] (map-indexed vector wires)]
+    (probe (pr-str name n) wire)))
 
 (defn not-gate [input output]
   (letfn [(action [agenda]
@@ -122,8 +134,9 @@
     :ok))
 
 ; Ex 3.30
-(defn make-wires [agenda n]
-  (for [_ (range n)] (make-wire agenda)))
+(defn make-wires
+  ([agenda n] (for [_ (range n)] (make-wire agenda)))
+  ([agenda n name] (for [i (range n)] (make-wire agenda (pr-str name i)))))
 
 (defn get-signals [wires]
   (map get-signal wires))
@@ -132,29 +145,15 @@
   (doseq [pair (map vector wires new-values)]
     (apply set-signal! pair)))
 
-; TODO: What is wrong with the ripple carry adder?
 (defn ripple-carry-adder [agenda as bs c-in sum c-out]
   (let [n (dec (count as))
-        cs (make-wires agenda n)
-        cs-in (conj cs c-in)
+        cs (make-wires agenda n "c")
+        ; (conj cs c-in) where cs is a list results in (c-in cs...) :(
+        ; BUT: (conj (vec cs) c-in) results in [cs... c-in] :)
+        cs-in (conj (vec cs) c-in)
         cs-out (cons c-out cs)
         units (map vector as bs cs-in sum cs-out)]
-    (println "as" (count as))
-    (println "bs" (count bs))
-    (println "cs" (count cs))
-    (println "cs-in" (count cs-in))
-    (println "cs-out" (count cs-out))
-    (doseq [unit units]
-      ;(println "len unit" (count unit))
-      ; a1 b1 c1   s1 c-out
-      ; a2 b2 c-in s2 c1
-      (println (get-signals unit))
-      ;(println "a" (get-signal (first unit))  "|"
-      ;         "b" (get-signal (second unit)) "|"
-      ;         "c-in" (get-signal (nth unit 2)) "|"
-      ;         "s" (get-signal (nth unit 3)) "|"
-      ;         "c-out" (get-signal (nth unit 4)))
-      (apply full-adder agenda unit))
+    (doseq [unit units] (apply full-adder agenda unit))
     :ok))
 
 ; Ex 3.31
@@ -593,104 +592,105 @@
       (set-signal! a3 true)
       (is (= (get-signals [a1 a2 a3]) [true false true]))
       ))
-  ;(testing "ripple carry adder 1"
-  ;  (let [agenda (make-agenda)
-  ;        as (make-wires agenda 1)
-  ;        bs (make-wires agenda 1)
-  ;        c-in (make-wire agenda)
-  ;        sum (make-wires agenda 1)
-  ;        c-out (make-wire agenda)]
-  ;    (ripple-carry-adder agenda as bs c-in sum c-out)
-  ;
-  ;    (set-signal! c-in false)
-  ;    (set-signals! as [false])
-  ;    (set-signals! bs [false])
-  ;    (propagate agenda)
-  ;    (is (= (get-signals sum) [false]))
-  ;    (is (= (get-signal c-out) false))
-  ;
-  ;    (set-signal! c-in false)
-  ;    (set-signals! as [true])
-  ;    (set-signals! bs [false])
-  ;    (propagate agenda)
-  ;    (is (= (get-signals sum) [true]))
-  ;    (is (= (get-signal c-out) false))
-  ;
-  ;    (set-signal! c-in false)
-  ;    (set-signals! as [true])
-  ;    (set-signals! bs [true])
-  ;    (propagate agenda)
-  ;    (is (= (get-signals sum) [false]))
-  ;    (is (= (get-signal c-out) true))
-  ;
-  ;    (set-signal! c-in true)
-  ;    (set-signals! as [true])
-  ;    (set-signals! bs [true])
-  ;    (propagate agenda)
-  ;    (is (= (get-signals sum) [true]))
-  ;    (is (= (get-signal c-out) true))
-  ;    ))
+
+  (testing "ripple carry adder 1"
+    (let [agenda (make-agenda)
+          as (make-wires agenda 1)
+          bs (make-wires agenda 1)
+          c-in (make-wire agenda)
+          sum (make-wires agenda 1)
+          c-out (make-wire agenda)]
+      (ripple-carry-adder agenda as bs c-in sum c-out)
+
+      (set-signal! c-in false)
+      (set-signals! as [false])
+      (set-signals! bs [false])
+      (propagate agenda)
+      (is (= (get-signals sum) [false]))
+      (is (= (get-signal c-out) false))
+
+      (set-signal! c-in false)
+      (set-signals! as [true])
+      (set-signals! bs [false])
+      (propagate agenda)
+      (is (= (get-signals sum) [true]))
+      (is (= (get-signal c-out) false))
+
+      (set-signal! c-in false)
+      (set-signals! as [true])
+      (set-signals! bs [true])
+      (propagate agenda)
+      (is (= (get-signals sum) [false]))
+      (is (= (get-signal c-out) true))
+
+      (set-signal! c-in true)
+      (set-signals! as [true])
+      (set-signals! bs [true])
+      (propagate agenda)
+      (is (= (get-signals sum) [true]))
+      (is (= (get-signal c-out) true))
+      ))
 
   ; TODO: What is wrong with the ripple carry adder?
   (testing "ripple carry adder 2"
     (let [agenda (make-agenda)
-          as (make-wires agenda 2)
-          bs (make-wires agenda 2)
-          c-in (make-wire agenda)
-          sum (make-wires agenda 2)
-          c-out (make-wire agenda)]
+          as (make-wires agenda 2 "a")
+          bs (make-wires agenda 2 "b")
+          c-in (make-wire agenda "c-in")
+          sum (make-wires agenda 2 "sum")
+          c-out (make-wire agenda "c-out")]
       (ripple-carry-adder agenda as bs c-in sum c-out)
 
-      ;(set-signal! c-in false)
+      (set-signal! c-in false)
       (set-signals! as [false true])
       (set-signals! bs [false true])
       (propagate agenda)
       (is (= (get-signals sum) [true false]))
       (is (= (get-signal c-out) false))
 
-      ;(set-signal! c-in false)
-      ;(set-signals! as [true false])
-      ;(set-signals! bs [false])
-      ;(propagate agenda)
-      ;(is (= (get-signals sum) [true false]))
-      ;(is (= (get-signal c-out) false))
-      ;
-      ;(set-signal! c-in false)
-      ;(set-signals! as [false true])
-      ;(set-signals! bs [false true])
-      ;(propagate agenda)
-      ;(is (= (get-signals sum) [true false]))
-      ;(is (= (get-signal c-out) false))
-      ;
-      ;(set-signal! c-in true)
-      ;(set-signals! as [true true])
-      ;(set-signals! bs [true true])
-      ;(propagate agenda)
-      ;(is (= (get-signals sum) [true true]))
-      ;(is (= (get-signal c-out) true))
+      (set-signal! c-in false)
+      (set-signals! as [true false])
+      (set-signals! bs [false false])
+      (propagate agenda)
+      (is (= (get-signals sum) [true false]))
+      (is (= (get-signal c-out) false))
+
+      (set-signal! c-in false)
+      (set-signals! as [false true])
+      (set-signals! bs [false true])
+      (propagate agenda)
+      (is (= (get-signals sum) [true false]))
+      (is (= (get-signal c-out) false))
+
+      (set-signal! c-in true)
+      (set-signals! as [true true])
+      (set-signals! bs [true true])
+      (propagate agenda)
+      (is (= (get-signals sum) [true true]))
+      (is (= (get-signal c-out) true))
       ))
 
-  ;(testing "ripple carry adder"
-  ;  (let [agenda (make-agenda)
-  ;        as (make-wires agenda 4)
-  ;        bs (make-wires agenda 4)
-  ;        c-in (make-wire agenda)
-  ;        sum (make-wires agenda 4)
-  ;        c-out (make-wire agenda)]
-  ;    (ripple-carry-adder agenda as bs c-in sum c-out)
-  ;
-  ;    (set-signal! c-in false)
-  ;    (set-signals! as [false false false false])
-  ;    (set-signals! bs [false false false false])
-  ;    (propagate agenda)
-  ;    (is (= (get-signals sum) [false false false false]))
-  ;    (is (= (get-signal c-out) false))
-  ;
-  ;    ;(set-signal! c-in false)
-  ;    ;(set-signals! as [false false false true])
-  ;    ;(set-signals! bs [false false false true])
-  ;    ;(propagate agenda)
-  ;    ;(is (= (get-signals sum) [false false true false]))
-  ;    ;(is (= (get-signal c-out) false))
-  ;    ))
+  (testing "ripple carry adder"
+    (let [agenda (make-agenda)
+          as (make-wires agenda 4)
+          bs (make-wires agenda 4)
+          c-in (make-wire agenda)
+          sum (make-wires agenda 4)
+          c-out (make-wire agenda)]
+      (ripple-carry-adder agenda as bs c-in sum c-out)
+
+      (set-signal! c-in false)
+      (set-signals! as [false false false false])
+      (set-signals! bs [false false false false])
+      (propagate agenda)
+      (is (= (get-signals sum) [false false false false]))
+      (is (= (get-signal c-out) false))
+
+      (set-signal! c-in false)
+      (set-signals! as [false true false true])
+      (set-signals! bs [false false false true])
+      (propagate agenda)
+      (is (= (get-signals sum) [false true true false]))
+      (is (= (get-signal c-out) false))
+      ))
   )
