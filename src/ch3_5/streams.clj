@@ -41,6 +41,13 @@
                               (delay (stream-filter f (stream-rest s)))]
         :else (stream-filter f (stream-rest s))))
 
+; Ex 3.50
+; TODO: Unit tests.
+(defn stream-map [f & streams]
+  (if (some nil? streams) nil
+               [(apply f (map stream-first streams))
+                (delay (apply stream-map f (map stream-rest streams)))]))
+
 (deftest tests
   (testing "stream-interval"
     (let [s (stream-interval 1 3)]
