@@ -35,6 +35,12 @@
                [(f (stream-first s))
                 (delay (stream-map f (stream-rest s)))]))
 
+(defn stream-filter [f s]
+  (cond (nil? s) nil
+        (f (stream-first s)) [(stream-first s)
+                              (delay (stream-filter f (stream-rest s)))]
+        :else (stream-filter f (stream-rest s))))
+
 (deftest tests
   (testing "stream-interval"
     (let [s (stream-interval 1 3)]
@@ -45,11 +51,18 @@
     )
 
   (testing "stream-map"
-    (let [s (stream-map (fn [x] (inc x))
-                        (stream-interval 1 3))]
+    (let [s (stream-map inc (stream-interval 1 3))]
       (is (= (stream-first s) 2))
       (is (= (stream-first (stream-rest s)) 3))
       (is (= (stream-first (stream-rest (stream-rest s))) 4))
+      (is (= (stream-first (stream-rest (stream-rest (stream-rest s)))) nil)))
+    )
+
+  (testing "stream-filter"
+    (let [s (stream-filter even? (stream-interval 1 7))]
+      (is (= (stream-first s) 2))
+      (is (= (stream-first (stream-rest s)) 4))
+      (is (= (stream-first (stream-rest (stream-rest s))) 6))
       (is (= (stream-first (stream-rest (stream-rest (stream-rest s)))) nil)))
     )
   )
