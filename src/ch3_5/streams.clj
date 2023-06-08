@@ -48,6 +48,37 @@
 
 (def primes (sieve (integers 2)))
 
+(def ones (cons 1 (lazy-seq ones)))
+
+(defn stream-sum [& streams]
+  (apply stream-map + streams))
+
+(def integers-2
+  (cons 1
+        (lazy-seq (stream-sum ones
+                              integers-2))))
+
+(def fibs-2
+  (cons 0
+        (cons 1
+              (lazy-seq (stream-sum (rest fibs-2)
+                                    fibs-2)))))
+
+(defn stream-scale [stream factor]
+  (stream-map #(* % factor) stream))
+
+; Ex 3.53
+; Defines the stream of powers of 2.
+
+(defn stream-mul [& streams]
+  (apply stream-map * streams))
+
+; Ex 3.54
+(def factorials
+  (cons 1
+        (lazy-seq (stream-mul factorials
+                              (integers 2)))))
+
 (defn spy [x]
   (println x)
   x)
@@ -84,8 +115,7 @@
       (is (= (stream-nth s 0) 2))
       (is (= (stream-nth s 1) 3))
       (is (= (stream-nth s 2) 4))
-      (is (= (stream-nth s 3) nil))
-      ))
+      (is (= (stream-nth s 3) nil))))
 
   (testing "stream-map multi"
     (let [s (stream-map +
@@ -94,16 +124,14 @@
       (is (= (stream-nth s 0) 3))
       (is (= (stream-nth s 1) 5))
       (is (= (stream-nth s 2) 7))
-      (is (= (stream-nth s 3) nil))
-      ))
-  ;
+      (is (= (stream-nth s 3) nil))))
+
   (testing "stream-filter"
     (let [s (stream-filter even? (stream-interval 1 7))]
       (is (= (stream-nth s 0) 2))
       (is (= (stream-nth s 1) 4))
       (is (= (stream-nth s 2) 6))
-      (is (= (stream-nth s 3) nil))
-      ))
+      (is (= (stream-nth s 3) nil))))
 
   ; Ex 3.51
   ; Displays
@@ -127,6 +155,51 @@
 
   (testing "primes"
     (is (= (stream-nth primes 50) 233)))
+
+  (testing "ones"
+    (is (= (stream-nth ones 0) 1))
+    (is (= (stream-nth ones 1) 1))
+    (is (= (stream-nth ones 2) 1)))
+
+  (testing "stream-sum"
+    (let [s1 (stream-interval 1 7)
+          s2 (stream-interval 1 7)
+          s (stream-sum s1 s2)]
+      (is (= (stream-nth s 0) 2))
+      (is (= (stream-nth s 1) 4))
+      (is (= (stream-nth s 2) 6))
+      (is (= (stream-nth s 3) 8))))
+
+  (testing "integers-2"
+    (is (= (stream-nth integers-2 0) 1))
+    (is (= (stream-nth integers-2 1) 2))
+    (is (= (stream-nth integers-2 2) 3)))
+
+  (testing "fibs-2"
+    (is (= (stream-nth fibs-2 0) 0))
+    (is (= (stream-nth fibs-2 1) 1))
+    (is (= (stream-nth fibs-2 2) 1))
+    (is (= (stream-nth fibs-2 3) 2))
+    (is (= (stream-nth fibs-2 4) 3))
+    (is (= (stream-nth fibs-2 5) 5)))
+
+  (testing "stream-scale"
+    (let [t (stream-interval 1 10)
+          s (stream-scale t 3)]
+      (is (= (stream-nth s 0) 3))
+      (is (= (stream-nth s 3) 12))
+      (is (= (stream-nth s 9) 30))
+      (is (= (stream-nth s 2) 9))
+      (is (= (stream-nth s 10) nil))))
+
+  (testing "factorials"
+    (is (= (stream-nth factorials 0) 1))
+    (is (= (stream-nth factorials 1) 2))
+    (is (= (stream-nth factorials 2) 6))
+    (is (= (stream-nth factorials 3) 24))
+    (is (= (stream-nth factorials 4) 120))
+    (is (= (stream-nth factorials 5) 720)))
+
 
   )
 
