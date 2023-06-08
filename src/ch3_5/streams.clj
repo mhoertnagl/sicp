@@ -79,6 +79,16 @@
         (lazy-seq (stream-mul factorials
                               (integers 2)))))
 
+; Ex 3.55
+;(defn stream-partial-sums [stream]
+;  (stream-sum stream
+;              (lazy-seq (stream-partial-sums (rest stream)))))
+
+(defn stream-partial-sums [stream]
+  (cons (first stream)
+        (lazy-seq (stream-sum (rest stream)
+                              (stream-partial-sums stream)))))
+
 (defn spy [x]
   (println x)
   x)
@@ -200,6 +210,13 @@
     (is (= (stream-nth factorials 4) 120))
     (is (= (stream-nth factorials 5) 720)))
 
+  (testing "stream-partial-sums integers"
+    (let [s (stream-partial-sums (integers))]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 1) 3))
+      (is (= (stream-nth s 2) 6))
+      (is (= (stream-nth s 3) 10))
+      (is (= (stream-nth s 4) 15))))
 
   )
 
