@@ -1,85 +1,79 @@
 (ns ch3_5.streams
   (:require [clojure.test :refer :all]))
 
-;; https://clojuredocs.org/clojure.core/delay
-
-;(defn stream-of [func args]
-;  (let [res (apply func args)]
-;    (if (nil? res)
-;      nil
-;      [(first res)
-;       (delay (stream-of func (rest res)))])))
-;
-;(defn stream-interval [a b]
-;  (letfn [(func [x y] (if (> x y) nil [x (inc x) y]))]
-;    (stream-of func [a b])))
-
-(defn stream-of [f & args]
-  (let [nxt (apply f args)]
-    (if (nil? nxt) nil
-                   [(first nxt)
-                    (delay (apply stream-of f (rest nxt)))])))
+;; TODO: issue with stream-interval. Returns a lazy-seq of nil instead of nil.
 
 (defn stream-interval [a b]
-  (stream-of (fn [x y] (if (> x y) nil [x (inc x) y])) a b))
-
-;(defn stream-interval [a b]
-;  (if (> a b) nil [a (delay (stream-interval (inc a) b))]))
-
-(defn stream-first [s] (first s))
-(defn stream-rest [s] @(second s))
+  (if (> a b)
+    nil
+    (cons a (lazy-seq (stream-interval (inc a) b)))))
 
 (defn stream-nth [s n]
   (if (zero? n)
-    (stream-first s)
-    (stream-nth (stream-rest s) (dec n))))
-
-;(defn stream-map [f s]
-;  (if (nil? s) nil
-;               [(f (stream-first s))
-;                (delay (stream-map f (stream-rest s)))]))
+    (first s)
+    (stream-nth (lazy-seq (rest s))
+                (dec n))))
 
 (defn stream-filter [f s]
   (cond (nil? s) nil
-        (f (stream-first s)) [(stream-first s)
-                              (delay (stream-filter f (stream-rest s)))]
-        :else (stream-filter f (stream-rest s))))
+        (nil? (first s)) nil
+        (f (first s)) (cons (first s)
+                            (lazy-seq (stream-filter f (rest s))))
+        :else (stream-filter f (rest s))))
 
 ; Ex 3.50
 (defn stream-map [f & streams]
-  (if (some nil? streams) nil
-               [(apply f (map stream-first streams))
-                (delay (apply stream-map f (map stream-rest streams)))]))
+  (if (some nil? streams)
+    nil
+    (let [vs (map first streams)]
+      (if (some nil? vs)
+        nil
+        (cons (apply f vs)
+              (lazy-seq (apply stream-map f (map rest streams))))))))
 
-(defn integers-starting-from [n] (stream-of (fn [x] [x (inc x)]) n))
-(def integers (integers-starting-from 1))
+(defn integers
+  ([] (integers 1))
+  ([n] (lazy-seq (cons n (integers (inc n))))))
 
 (defn divisible? [x y] (zero? (rem x y)))
 
-(defn fib-gen [a b] (stream-of (fn [x y] [x y (+ x y)]) a b))
-(def fibs (fib-gen 0 1))
+(defn fibs
+  ([] (fibs 0 1))
+  ([a b] (lazy-seq (cons a (fibs b (+ a b))))))
 
 (defn sieve [s]
-  [(stream-first s)
-   (delay (sieve (stream-filter (fn [x] (not (divisible? x (stream-first s))))
-                                (stream-rest s))))])
+  (cons (first s)
+        (lazy-seq (sieve (stream-filter #(not (divisible? % (first s)))
+                                        (rest s))))))
 
-(def primes (sieve (integers-starting-from 2)))
+(def primes (sieve (integers 2)))
 
 (defn spy [x]
   (println x)
   x)
 
 (deftest tests
+  (testing "primes"
+    (is (= (first (integers)) 1))
+    (is (= (first (rest (integers))) 2)))
+
   (testing "stream-interval"
     (let [s (stream-interval 1 3)]
-      (is (= (stream-first s) 1))
-      (is (= (stream-first (stream-rest s)) 2))
-      (is (= (stream-first (stream-rest (stream-rest s))) 3))
-      (is (= (stream-first (stream-rest (stream-rest (stream-rest s)))) nil))))
+      (is (= (first s) 1))
+      (is (= (first (rest s)) 2))
+      (is (= (first (rest (rest s))) 3))
+      (is (= (first (rest (rest (rest s)))) nil))))
 
   (testing "stream-nth"
     (let [s (stream-interval 1 10)]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 3) 4))
+      (is (= (stream-nth s 9) 10))
+      (is (= (stream-nth s 2) 3))
+      (is (= (stream-nth s 10) nil))))
+
+  (testing "stream-nth of integers"
+    (let [s (integers)]
       (is (= (stream-nth s 0) 1))
       (is (= (stream-nth s 3) 4))
       (is (= (stream-nth s 9) 10))
@@ -87,26 +81,29 @@
 
   (testing "stream-map"
     (let [s (stream-map inc (stream-interval 1 3))]
-      (is (= (stream-first s) 2))
-      (is (= (stream-first (stream-rest s)) 3))
-      (is (= (stream-first (stream-rest (stream-rest s))) 4))
-      (is (= (stream-first (stream-rest (stream-rest (stream-rest s)))) nil))))
+      (is (= (stream-nth s 0) 2))
+      (is (= (stream-nth s 1) 3))
+      (is (= (stream-nth s 2) 4))
+      (is (= (stream-nth s 3) nil))
+      ))
 
   (testing "stream-map multi"
     (let [s (stream-map +
                         (stream-interval 1 3)
                         (stream-interval 2 5))]
-      (is (= (stream-first s) 3))
-      (is (= (stream-first (stream-rest s)) 5))
-      (is (= (stream-first (stream-rest (stream-rest s))) 7))
-      (is (= (stream-first (stream-rest (stream-rest (stream-rest s)))) nil))))
-
+      (is (= (stream-nth s 0) 3))
+      (is (= (stream-nth s 1) 5))
+      (is (= (stream-nth s 2) 7))
+      (is (= (stream-nth s 3) nil))
+      ))
+  ;
   (testing "stream-filter"
     (let [s (stream-filter even? (stream-interval 1 7))]
-      (is (= (stream-first s) 2))
-      (is (= (stream-first (stream-rest s)) 4))
-      (is (= (stream-first (stream-rest (stream-rest s))) 6))
-      (is (= (stream-first (stream-rest (stream-rest (stream-rest s)))) nil))))
+      (is (= (stream-nth s 0) 2))
+      (is (= (stream-nth s 1) 4))
+      (is (= (stream-nth s 2) 6))
+      (is (= (stream-nth s 3) nil))
+      ))
 
   ; Ex 3.51
   ; Displays
@@ -119,7 +116,7 @@
   ;   6
   ;   7
   ; The values 0 through 5 are not re-evaluated.
-  ; In Clojure, delay implements a memoization mechanism.
+  ; In Clojure, lazy-val implements a memoization mechanism.
   ;(testing "Ex 3.51"
   ;  (let [s (stream-map spy (stream-interval 0 10))]
   ;    (stream-nth s 5)
@@ -130,5 +127,6 @@
 
   (testing "primes"
     (is (= (stream-nth primes 50) 233)))
+
   )
 
