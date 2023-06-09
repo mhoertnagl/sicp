@@ -3,6 +3,9 @@
 
 ;; TODO: issue with stream-interval. Returns a lazy-seq of nil instead of nil.
 
+(defn stream-nil? [s]
+  (or (nil? s) (nil? (first s))))
+
 (defn stream-interval [a b]
   (if (> a b)
     nil
@@ -15,8 +18,7 @@
                 (dec n))))
 
 (defn stream-filter [f s]
-  (cond (nil? s) nil
-        (nil? (first s)) nil
+  (cond (stream-nil? s) nil
         (f (first s)) (cons (first s)
                             (lazy-seq (stream-filter f (rest s))))
         :else (stream-filter f (rest s))))
@@ -80,14 +82,41 @@
                               (integers 2)))))
 
 ; Ex 3.55
-;(defn stream-partial-sums [stream]
-;  (stream-sum stream
-;              (lazy-seq (stream-partial-sums (rest stream)))))
-
 (defn stream-partial-sums [stream]
   (cons (first stream)
         (lazy-seq (stream-sum (rest stream)
                               (stream-partial-sums stream)))))
+
+; Ex 3.56
+(defn stream-merge [s1 s2]
+  (cond (stream-nil? s1) s2
+        (stream-nil? s2) s1
+        :else (let [v1 (first s1)
+                    v2 (first s2)]
+                (cond (< v1 v2) (cons v1
+                                      (lazy-seq (stream-merge (rest s1) s2)))
+                      (> v1 v2) (cons v2
+                                      (lazy-seq (stream-merge s1 (rest s2))))
+                      :else (cons v1
+                                  (lazy-seq (stream-merge (rest s1) (rest s2))))))))
+
+(def S (cons 1
+             (lazy-seq (stream-merge (stream-merge (stream-scale S 2)
+                                                   (stream-scale S 3))
+                                     (stream-scale S 5)))))
+
+; Ex 3.57
+; We only need O(n) additions, since lazy-stream memoizes
+; already realized elements of the stream.
+; Using (fn [] ...) instead would result in exponential
+; blow-up as we need to recalculate the streams F(n-2)
+; and F(n-1) to yield the stream for F(n).
+
+; Ex 3.58
+; Computes the stream of decimal digits of num/den in
+; the given radix.
+; (expand 1 7 10) would thus be the stream [1 4 2 8 ...]
+; (expand 3 8 10) is the finite stream [3 7 5]
 
 (defn spy [x]
   (println x)
@@ -191,7 +220,8 @@
     (is (= (stream-nth fibs-2 2) 1))
     (is (= (stream-nth fibs-2 3) 2))
     (is (= (stream-nth fibs-2 4) 3))
-    (is (= (stream-nth fibs-2 5) 5)))
+    (is (= (stream-nth fibs-2 5) 5))
+    (is (= (stream-nth fibs-2 50) 12586269025)))
 
   (testing "stream-scale"
     (let [t (stream-interval 1 10)
@@ -217,6 +247,19 @@
       (is (= (stream-nth s 2) 6))
       (is (= (stream-nth s 3) 10))
       (is (= (stream-nth s 4) 15))))
+
+  (testing "S"
+    (is (= (stream-nth S 0) 1))
+    (is (= (stream-nth S 1) 2))
+    (is (= (stream-nth S 2) 3))
+    (is (= (stream-nth S 3) 4))
+    (is (= (stream-nth S 4) 5))
+    (is (= (stream-nth S 5) 6))
+    (is (= (stream-nth S 6) 8))
+    (is (= (stream-nth S 7) 9))
+    (is (= (stream-nth S 8) 10))
+    (is (= (stream-nth S 9) 12))
+    (is (= (stream-nth S 10) 15)))
 
   )
 
