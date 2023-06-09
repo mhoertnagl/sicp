@@ -118,6 +118,29 @@
 ; (expand 1 7 10) would thus be the stream [1 4 2 8 ...]
 ; (expand 3 8 10) is the finite stream [3 7 5]
 
+; Ex 3.59 a)
+(defn integrate-series [s]
+  (letfn [(integrate [s n]
+            (cons (/ (first s) n)
+                  (lazy-seq (integrate (rest s) (inc n)))))]
+    (integrate s 1)))
+
+; Ex 3.59 b)
+(def exp-series
+  (cons 1
+        (lazy-seq (integrate-series exp-series))))
+
+; Clojure's way of doing mutual recursion.
+(declare sine-series)
+
+(def cosine-series
+  (cons 1
+        (lazy-seq (stream-scale (integrate-series sine-series) (- 1)))))
+
+(def sine-series
+  (cons 0
+        (lazy-seq (integrate-series cosine-series))))
+
 (defn spy [x]
   (println x)
   x)
@@ -260,6 +283,46 @@
     (is (= (stream-nth S 8) 10))
     (is (= (stream-nth S 9) 12))
     (is (= (stream-nth S 10) 15)))
+
+  (testing "integrate-series"
+    (let [s (integrate-series ones)]
+      (is (= (stream-nth s 0) (/ 1)))
+      (is (= (stream-nth s 1) (/ 2)))
+      (is (= (stream-nth s 2) (/ 3)))
+      (is (= (stream-nth s 3) (/ 4)))
+      (is (= (stream-nth s 4) (/ 5)))))
+
+  (testing "exp-series"
+    (let [s exp-series]
+      (is (= (stream-nth s 0) (/ 1)))
+      (is (= (stream-nth s 1) (/ 1)))
+      (is (= (stream-nth s 2) (/ 2)))
+      (is (= (stream-nth s 3) (/ 6)))
+      (is (= (stream-nth s 4) (/ 24)))))
+
+  (testing "cosine-series"
+    (let [s cosine-series]
+      (is (= (stream-nth s 0) 1))                           ; 1
+      (is (= (stream-nth s 1) 0))                           ; 0*x
+      (is (= (stream-nth s 2) (/ (- 1) (* 2))))             ; -1/2*x^2
+      (is (= (stream-nth s 3) 0))                           ; 0*x^3
+      (is (= (stream-nth s 4) (/ (* 4 3 2))))               ; 1/24*x^4
+      (is (= (stream-nth s 5) 0))
+      (is (= (stream-nth s 6) (/ (- 1) (* 6 5 4 3 2))))     ; -1/720*x^6
+      (is (= (stream-nth s 7) 0))
+      (is (= (stream-nth s 8) (/ (* 8 7 6 5 4 3 2))))))
+
+  (testing "sine-series"
+    (let [s sine-series]
+      (is (= (stream-nth s 0) 0))                           ; 0
+      (is (= (stream-nth s 1) 1))                           ; x
+      (is (= (stream-nth s 2) 0))                           ; 0*x^2
+      (is (= (stream-nth s 3) (/ (- 1) (* 3 2))))           ; -1/6*x^3
+      (is (= (stream-nth s 4) 0))                           ; 0*x^4
+      (is (= (stream-nth s 5) (/ (* 5 4 3 2))))             ; 1/120*x^5
+      (is (= (stream-nth s 6) 0))
+      (is (= (stream-nth s 7) (/ (- 1) (* 7 6 5 4 3 2))))
+      (is (= (stream-nth s 8) 0))))
 
   )
 
