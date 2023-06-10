@@ -141,6 +141,12 @@
   (cons 0
         (lazy-seq (integrate-series cosine-series))))
 
+; Ex 3.60
+(defn mul-series [s1 s2]
+  (cons (* (first s1) (first s2))
+        (lazy-seq (stream-sum (stream-scale (rest s1) (first s2))
+                              (mul-series s1 (rest s2))))))
+
 (defn spy [x]
   (println x)
   x)
@@ -323,6 +329,23 @@
       (is (= (stream-nth s 6) 0))
       (is (= (stream-nth s 7) (/ (- 1) (* 7 6 5 4 3 2))))
       (is (= (stream-nth s 8) 0))))
+
+  (testing "mul-series-1"
+    (let [s (mul-series ones ones)]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 1) 2))
+      (is (= (stream-nth s 2) 3))
+      (is (= (stream-nth s 3) 4))
+      (is (= (stream-nth s 4) 5))))
+
+  (testing "mul-series"
+    (let [s (stream-sum (mul-series sine-series sine-series)
+                        (mul-series cosine-series cosine-series))]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 1) 0))
+      (is (= (stream-nth s 2) 0))
+      (is (= (stream-nth s 3) 0))
+      (is (= (stream-nth s 4) 0))))
 
   )
 
