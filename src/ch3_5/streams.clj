@@ -155,6 +155,26 @@
                                             (invert-unit-series s))
                                 (- 1)))))
 
+; For power series with b0 != 0 use the following identity
+;   S = sum[i=0] bi*x^i
+;     = b0 + sum[i=1] bi*x^i
+;     = b0 * (1 + sum[i=1] (bi/b0)*x^i)
+; then
+;   1/S = 1 / ( b0 * (1 + sum[i=1] (bi/b0)*x^i) )
+;       = 1/b0 * 1 / (1 + sum[i=1] (bi/b0)*x^i)
+;       = 1/b0 * 1 / S'
+; where S' = (S / b0) and is a power series with constant term 1.
+(defn invert-series [s]
+  (let [inv-b0 (/ (first s))]
+    (stream-scale (invert-unit-series (stream-scale s inv-b0))
+                  inv-b0)))
+
+; Ex 3.62
+(defn div-series [s1 s2]
+  (mul-series s1 (invert-series s2)))
+
+(def tangent-series (div-series sine-series cosine-series))
+
 (deftest tests
   (testing "primes"
     (is (= (first (integers)) 1))
@@ -351,9 +371,29 @@
       (is (= (stream-nth s 3) 0))
       (is (= (stream-nth s 4) 0))))
 
-  (testing "invert-series"
+  (testing "invert-unit-series"
     (let [s (mul-series exp-series
                         (invert-unit-series exp-series))]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 1) 0))
+      (is (= (stream-nth s 2) 0))
+      (is (= (stream-nth s 3) 0))
+      (is (= (stream-nth s 4) 0))))
+
+  (testing "invert-series exp"
+    (let [s (mul-series exp-series
+                        (invert-series exp-series))]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 1) 0))
+      (is (= (stream-nth s 2) 0))
+      (is (= (stream-nth s 3) 0))
+      (is (= (stream-nth s 4) 0))))
+
+  ; TODO: Test with a series that has a constant
+  ;       term that is neither 0 nor 1.
+  (testing "invert-series cos"
+    (let [s (mul-series cosine-series
+                        (invert-series cosine-series))]
       (is (= (stream-nth s 0) 1))
       (is (= (stream-nth s 1) 0))
       (is (= (stream-nth s 2) 0))
