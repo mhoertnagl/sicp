@@ -147,9 +147,13 @@
         (lazy-seq (stream-sum (stream-scale (rest s1) (first s2))
                               (mul-series s1 (rest s2))))))
 
-(defn spy [x]
-  (println x)
-  x)
+; Ex 3.61
+; X = 1 - Sr * X
+(defn invert-unit-series [s]
+  (cons 1
+        (lazy-seq (stream-scale (mul-series (rest s)
+                                            (invert-unit-series s))
+                                (- 1)))))
 
 (deftest tests
   (testing "primes"
@@ -341,6 +345,15 @@
   (testing "mul-series"
     (let [s (stream-sum (mul-series sine-series sine-series)
                         (mul-series cosine-series cosine-series))]
+      (is (= (stream-nth s 0) 1))
+      (is (= (stream-nth s 1) 0))
+      (is (= (stream-nth s 2) 0))
+      (is (= (stream-nth s 3) 0))
+      (is (= (stream-nth s 4) 0))))
+
+  (testing "invert-series"
+    (let [s (mul-series exp-series
+                        (invert-unit-series exp-series))]
       (is (= (stream-nth s 0) 1))
       (is (= (stream-nth s 1) 0))
       (is (= (stream-nth s 2) 0))
